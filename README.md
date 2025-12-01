@@ -39,7 +39,7 @@ An industry-level Django application for AI-powered detection and classification
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/BHUVANBN/DR_refined.git
    cd DR_refined
    ```
 
