@@ -301,3 +301,35 @@ INFO 2025-12-01 17:09:21,766 services 204834 139654036321984 Demo mode: Processi
 INFO 2025-12-01 17:10:52,752 services 204834 139654036321984 Demo mode: Processing image 0b2ea8f268cf.png
 INFO 2025-12-01 17:14:18,906 services 204834 139654036321984 Demo mode: Processing image 0abf0c485f66.png
 INFO 2025-12-01 17:16:01,942 services 204834 139654036321984 Demo mode: Processing image 0b2ea8f268cf.png
+INFO 2025-12-01 17:48:42,214 autoreload 204834 139656161296640 /home/batman/Diabetic-Retinopathy/DR_refined/dr_detection/settings.py changed, reloading.
+INFO 2025-12-01 17:48:43,508 autoreload 292978 140029215883520 Watching for file changes with StatReloader
+ERROR 2025-12-01 17:48:46,463 services 292978 140029215883520 Error loading model: Error when deserializing class 'Conv2D' using config={'name': 'Conv1', 'trainable': True, 'dtype': 'float32', 'filters': 16, 'kernel_size': [3, 3], 'strides': [2, 2], 'padding': 'valid', 'data_format': 'channels_last', 'dilation_rate': [1, 1], 'activation': 'linear', 'use_bias': False, 'kernel_initializer': {'class_name': 'VarianceScaling', 'config': {'scale': 1, 'mode': 'fan_avg', 'distribution': 'uniform', 'seed': None, 'dtype': 'float32'}}, 'bias_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'kernel_regularizer': None, 'bias_regularizer': None, 'activity_regularizer': None, 'kernel_constraint': None, 'bias_constraint': None}.
+
+Exception encountered: <class 'keras.src.initializers.random_initializers.VarianceScaling'> could not be deserialized properly. Please ensure that components that are Python object instances (layers, models, etc.) returned by `get_config()` are explicitly deserialized in the model's `from_config()` method.
+
+config={'module': 'keras.initializers', 'class_name': 'VarianceScaling', 'config': {'scale': 1, 'mode': 'fan_avg', 'distribution': 'uniform', 'seed': None, 'dtype': 'float32'}, 'registered_name': None}.
+
+Exception encountered: VarianceScaling.__init__() got an unexpected keyword argument 'dtype'
+ERROR 2025-12-01 17:48:46,468 services 292978 140029215883520 Error loading model with custom objects: Error when deserializing class 'BatchNormalization' using config={'name': 'bn_Conv1', 'trainable': True, 'dtype': 'float32', 'momentum': 0.999, 'epsilon': 0.001, 'center': True, 'scale': True, 'beta_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'gamma_initializer': {'class_name': 'Ones', 'config': {'dtype': 'float32'}}, 'moving_mean_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'moving_variance_initializer': {'class_name': 'Ones', 'config': {'dtype': 'float32'}}, 'beta_regularizer': None, 'gamma_regularizer': None, 'beta_constraint': None, 'gamma_constraint': None, 'axis': 3}.
+
+Exception encountered: <class 'keras.src.initializers.constant_initializers.Ones'> could not be deserialized properly. Please ensure that components that are Python object instances (layers, models, etc.) returned by `get_config()` are explicitly deserialized in the model's `from_config()` method.
+
+config={'module': 'keras.initializers', 'class_name': 'Ones', 'config': {'dtype': 'float32'}, 'registered_name': None}.
+
+Exception encountered: Ones() takes no arguments
+INFO 2025-12-01 17:49:15,834 autoreload 292978 140029215883520 /home/batman/Diabetic-Retinopathy/DR_refined/dr_detection/settings.py changed, reloading.
+INFO 2025-12-01 17:49:17,135 autoreload 293396 140354449666304 Watching for file changes with StatReloader
+ERROR 2025-12-01 17:49:19,583 services 293396 140354449666304 Error loading model: Error when deserializing class 'Conv2D' using config={'name': 'Conv1', 'trainable': True, 'dtype': 'float32', 'filters': 16, 'kernel_size': [3, 3], 'strides': [2, 2], 'padding': 'valid', 'data_format': 'channels_last', 'dilation_rate': [1, 1], 'activation': 'linear', 'use_bias': False, 'kernel_initializer': {'class_name': 'VarianceScaling', 'config': {'scale': 1, 'mode': 'fan_avg', 'distribution': 'uniform', 'seed': None, 'dtype': 'float32'}}, 'bias_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'kernel_regularizer': None, 'bias_regularizer': None, 'activity_regularizer': None, 'kernel_constraint': None, 'bias_constraint': None}.
+
+Exception encountered: <class 'keras.src.initializers.random_initializers.VarianceScaling'> could not be deserialized properly. Please ensure that components that are Python object instances (layers, models, etc.) returned by `get_config()` are explicitly deserialized in the model's `from_config()` method.
+
+config={'module': 'keras.initializers', 'class_name': 'VarianceScaling', 'config': {'scale': 1, 'mode': 'fan_avg', 'distribution': 'uniform', 'seed': None, 'dtype': 'float32'}, 'registered_name': None}.
+
+Exception encountered: VarianceScaling.__init__() got an unexpected keyword argument 'dtype'
+ERROR 2025-12-01 17:49:19,588 services 293396 140354449666304 Error loading model with custom objects: Error when deserializing class 'BatchNormalization' using config={'name': 'bn_Conv1', 'trainable': True, 'dtype': 'float32', 'momentum': 0.999, 'epsilon': 0.001, 'center': True, 'scale': True, 'beta_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'gamma_initializer': {'class_name': 'Ones', 'config': {'dtype': 'float32'}}, 'moving_mean_initializer': {'class_name': 'Zeros', 'config': {'dtype': 'float32'}}, 'moving_variance_initializer': {'class_name': 'Ones', 'config': {'dtype': 'float32'}}, 'beta_regularizer': None, 'gamma_regularizer': None, 'beta_constraint': None, 'gamma_constraint': None, 'axis': 3}.
+
+Exception encountered: <class 'keras.src.initializers.constant_initializers.Ones'> could not be deserialized properly. Please ensure that components that are Python object instances (layers, models, etc.) returned by `get_config()` are explicitly deserialized in the model's `from_config()` method.
+
+config={'module': 'keras.initializers', 'class_name': 'Ones', 'config': {'dtype': 'float32'}, 'registered_name': None}.
+
+Exception encountered: Ones() takes no arguments
