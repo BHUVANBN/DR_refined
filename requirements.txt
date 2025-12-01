@@ -1,0 +1,9 @@
+Django==5.0.7
+tensorflow==2.20.0
+keras>=3.10.0
+Pillow>=10.4.0
+numpy>=1.26.0
+matplotlib>=3.8.0
+python-decouple==3.8
+whitenoise==6.7.0
+gunicorn==22.0.0

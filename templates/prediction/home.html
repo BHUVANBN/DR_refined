@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetinaAI | Advanced Diabetic Retinopathy Detection</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000000;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+        
+        .dark-theme {
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 25%, #1a1a1a 50%, #0f0f0f 75%, #000000 100%);
+            min-height: 100vh;
+        }
+        
+        .neural-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+                url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2072&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            z-index: -1;
+        }
+        
+        .neural-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(25px) saturate(200%);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.4), 
+                transparent);
+            opacity: 0.6;
+        }
+        
+        .glass-card::after {
+            display: none;
+        }
+        
+        .glass-card:hover {
+            transform: none;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2),
+                inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+        }
+        
+        .neural-border {
+            position: relative;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+            border-radius: 20px;
+            padding: 1px;
+        }
+        
+        .neural-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 1px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+            opacity: 0.5;
+            animation: borderRotate 3s linear infinite;
+        }
+        
+        @keyframes borderRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .glow-text {
+            text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .upload-zone {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px) saturate(150%);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            z-index: 10;
+            pointer-events: auto;
+        }
+        
+        .upload-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+        
+        .upload-zone:hover, .upload-zone.dragover {
+            border-color: rgba(255, 255, 255, 0.5);
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(1.03);
+            box-shadow: 
+                0 16px 48px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .upload-zone:hover::before, .upload-zone.dragover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary:disabled {
+            background: rgba(55, 65, 81, 0.5);
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .severity-badge {
+            border-radius: 50px;
+            padding: 12px 24px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .severity-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .severity-badge:hover::before {
+            left: 100%;
+        }
+        
+        .severity-no-dr { 
+            background: linear-gradient(135deg, #10b981, #059669);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .severity-mild { 
+            background: linear-gradient(135deg, #84cc16, #65a30d);
+            box-shadow: 0 0 20px rgba(132, 204, 22, 0.3);
+        }
+        
+        .severity-moderate { 
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+        }
+        
+        .severity-severe { 
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .severity-proliferative { 
+            background: linear-gradient(135deg, #991b1b, #7f1d1d);
+            box-shadow: 0 0 20px rgba(153, 27, 27, 0.3);
+        }
+        
+        .probability-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--bar-color), var(--bar-color-light));
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .probability-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .loading-spinner {
+            width: 48px;
+            height: 48px;
+            border: 3px solid rgba(59, 130, 246, 0.2);
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% { 
+                transform: scale(1.2);
+                opacity: 0.7;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.6s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .severity-card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(150%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            padding: 20px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .severity-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 255, 255, 0.3), 
+                transparent);
+            opacity: 0.5;
+        }
+        
+        .severity-card:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-6px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.25);
+            box-shadow: 
+                0 20px 60px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        }
+        
+        .severity-card:hover::after {
+            opacity: 0.8;
+        }
+        
+        .severity-no-dr-card { --severity-color: #10b981; }
+        .severity-mild-card { --severity-color: #84cc16; }
+        .severity-moderate-card { --severity-color: #f59e0b; }
+        .severity-severe-card { --severity-color: #ef4444; }
+        .severity-proliferative-card { --severity-color: #991b1b; }
+        
+        .text-primary {
+            color: #3b82f6;
+        }
+        
+        .text-secondary {
+            color: #9ca3af;
+        }
+        
+        .bg-primary {
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .nav-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px) saturate(180%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        #modelInfoModal {
+            transition: opacity 0.3s ease-in-out;
+        }
+        
+        #modelInfoModal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        #modelInfoModal:not(.hidden) {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <div class="neural-bg"></div>
+    
+    <!-- Navigation -->
+    <nav class="nav-glass sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 py-2">
+                <div class="flex items-center space-x-4">
+                    <div class="neural-border p-1">
+                        <div class="bg-gray-900 rounded-lg p-2">
+                            <i class="fas fa-eye text-blue-400 text-lg"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-bold glow-text">RetinaAI</h1>
+                        <p class="text-xs text-secondary">Neural Detection System</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <button onclick="showModelInfo()" class="text-secondary hover:text-primary transition-colors text-sm font-medium">
+                        <i class="fas fa-info-circle mr-2"></i> System Info
+                    </button>
+                    <div class="flex items-center space-x-2">
+                        <div class="pulse-dot"></div>
+                        <span class="text-sm text-secondary">Neural Network Active</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+        <!-- Hero Section -->
+        <div class="text-center mb-12 fade-in">
+            <div class="mb-6">
+                <h2 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="glow-text">Neural Vision</span>
+                </h2>
+                <p class="text-lg text-secondary max-w-3xl mx-auto leading-relaxed">
+                    Advanced AI-powered diabetic retinopathy detection using deep neural networks
+                </p>
+            </div>
+            <div class="flex justify-center space-x-4">
+                <div class="bg-primary rounded-full px-4 py-2 text-sm text-primary font-medium">
+                    <i class="fas fa-brain mr-2"></i>Deep Learning
+                </div>
+                <div class="bg-primary rounded-full px-4 py-2 text-sm text-primary font-medium">
+                    <i class="fas fa-shield-alt mr-2"></i>Medical Grade
+                </div>
+                <div class="bg-primary rounded-full px-4 py-2 text-sm text-primary font-medium">
+                    <i class="fas fa-tachometer-alt mr-2"></i>Real-time Analysis
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Interface -->
+        <div class="grid lg:grid-cols-2 gap-8 mb-16">
+            <!-- Upload Section -->
+            <div class="glass-card p-8">
+                <div class="mb-8">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-primary rounded-lg p-3">
+                            <i class="fas fa-upload text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Neural Upload</h3>
+                            <p class="text-secondary">Upload retinal scan for AI analysis</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-6">
+                    <!-- Upload Area -->
+                    <div id="uploadArea" class="upload-zone p-8 text-center cursor-pointer">
+                        <input type="file" id="imageInput" accept="image/*" class="hidden" onchange="handleImageSelect(event)">
+                        <div class="mb-4">
+                            <i class="fas fa-cloud-upload-alt text-5xl text-primary mb-3"></i>
+                        </div>
+                        <p class="text-white font-semibold text-base mb-2">Upload Retinal Image</p>
+                        <p class="text-secondary mb-1 text-sm">Drag & drop or click to browse</p>
+                        <p class="text-secondary text-xs opacity-75">PNG, JPG, JPEG • Max 10MB</p>
+                        <button type="button" class="mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors" onclick="document.getElementById('imageInput').click()">
+                            <i class="fas fa-folder-open mr-2"></i>Browse Files
+                        </button>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div id="imagePreview" class="hidden fade-in">
+                        <div class="relative rounded-xl overflow-hidden bg-gray-900 border border-gray-800">
+                            <img id="previewImg" src="" alt="Preview" class="w-full h-auto max-h-96 object-contain">
+                            <button onclick="removeImage()" class="absolute top-2 right-2 bg-gray-800 text-white p-1 rounded hover:bg-gray-700 transition-colors">
+                                <i class="fas fa-times text-sm"></i>
+                            </button>
+                        </div>
+                        <p id="fileName" class="text-sm text-secondary mt-3 text-center font-medium"></p>
+                    </div>
+                    
+                    <!-- Analyze Button -->
+                    <button type="button" id="analyzeBtn" disabled onclick="analyzeImage()" 
+                            class="btn-primary w-full py-3 text-base font-semibold flex items-center justify-center">
+                        <i class="fas fa-microscope mr-2"></i>
+                        <span>Initiate Neural Analysis</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="glass-card p-6">
+                <div class="mb-6">
+                    <div class="flex items-center space-x-4 mb-4">
+                        <div class="bg-primary rounded-lg p-3">
+                            <i class="fas fa-chart-line text-primary text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white">Analysis Results</h3>
+                            <p class="text-secondary">Neural network classification</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="resultsContainer">
+                    <!-- Default State -->
+                    <div id="defaultResults" class="text-center py-16">
+                        <div class="mb-6">
+                            <i class="fas fa-brain text-6xl text-secondary opacity-50"></i>
+                        </div>
+                        <p class="text-secondary text-lg">Awaiting neural input...</p>
+                        <p class="text-secondary text-sm opacity-75 mt-2">Upload an image to begin analysis</p>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingResults" class="hidden text-center py-16">
+                        <div class="loading-spinner mx-auto mb-6"></div>
+                        <p class="text-white font-semibold text-lg mb-2">Neural Network Processing</p>
+                        <p class="text-secondary">Analyzing retinal patterns...</p>
+                    </div>
+                    
+                    <!-- Results State -->
+                    <div id="analysisResults" class="hidden space-y-8 fade-in">
+                        <!-- Main Result -->
+                        <div class="text-center p-6 bg-gray-900 bg-opacity-50 rounded-2xl border border-gray-700">
+                            <div id="severityBadge" class="severity-badge inline-block mb-6">
+                                <!-- Result will be inserted here -->
+                            </div>
+                            <div class="text-3xl font-bold text-white mb-2 pt-4">
+                                <span id="confidenceScore">0</span>%
+                            </div>
+                            <p class="text-secondary">Neural Confidence Score</p>
+                        </div>
+                        
+                        <!-- Probability Distribution -->
+                        <div class="space-y-4">
+                            <h4 class="text-lg font-semibold text-white uppercase tracking-wider">Probability Distribution</h4>
+                            <div id="probabilityList" class="space-y-3">
+                                <!-- Probabilities will be inserted here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Neural Info -->
+                        <div class="bg-gray-900 bg-opacity-50 border border-gray-700 rounded-xl p-6">
+                            <div class="flex items-start space-x-4">
+                                <div class="bg-primary rounded-lg p-3">
+                                    <i class="fas fa-info-circle text-primary"></i>
+                                </div>
+                                <div>
+                                    <p class="text-white font-semibold mb-2">Neural Analysis Report</p>
+                                    <p class="text-secondary text-sm">AI-powered screening assistance. This analysis supports but does not replace professional medical diagnosis.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="errorResults" class="hidden text-center py-16">
+                        <div class="mb-6">
+                            <i class="fas fa-exclamation-triangle text-6xl text-red-400"></i>
+                        </div>
+                        <p class="text-red-400 font-semibold text-lg">Neural Analysis Failed</p>
+                        <p id="errorMessage" class="text-secondary mt-2"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Model Info Modal -->
+    <div id="modelInfoModal" class="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm hidden z-[9999] flex items-center justify-center p-4">
+        <div class="glass-card rounded-3xl p-8 max-w-2xl w-full relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-white">Neural Network Information</h3>
+                <button id="closeModalBtn" onclick="closeModal('modelInfoModal')" class="text-secondary hover:text-white transition-colors p-2 rounded-lg hover:bg-white hover:bg-opacity-10 z-[10000] relative">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            <div id="modelInfoContent">
+                <div class="text-center py-8">
+                    <div class="loading-spinner mx-auto mb-4"></div>
+                    <p class="text-secondary">Loading neural network data...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFile = null;
+        
+        function handleImageSelect(event) {
+            console.log('handleImageSelect called');
+            const file = event.target.files[0];
+            console.log('File selected:', file);
+            if (file) {
+                selectedFile = file;
+                console.log('File set:', selectedFile.name);
+                showImagePreview(file);
+                const analyzeBtn = document.getElementById('analyzeBtn');
+                if (analyzeBtn) {
+                    analyzeBtn.disabled = false;
+                    console.log('Analyze button enabled');
+                }
+            } else {
+                console.log('No file found');
+            }
+        }
+        
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('imagePreview').classList.remove('hidden');
+                document.getElementById('uploadArea').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removeImage() {
+            selectedFile = null;
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('uploadArea').classList.remove('hidden');
+            document.getElementById('analyzeBtn').disabled = true;
+        }
+        
+        async function analyzeImage() {
+            console.log('Analyze button clicked');
+            if (!selectedFile) {
+                console.log('No file selected');
+                return;
+            }
+            
+            console.log('Starting analysis for:', selectedFile.name);
+            showLoading();
+            
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            
+            try {
+                const response = await fetch('/prediction/predict/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': getCookie('csrftoken')
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response result:', result);
+                
+                if (result.success) {
+                    showResults(result);
+                } else {
+                    showError(result.error || 'Neural analysis failed');
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+                showError('Network error. Please retry analysis.');
+            }
+        }
+        
+        function showLoading() {
+            hideAllResults();
+            document.getElementById('loadingResults').classList.remove('hidden');
+        }
+        
+        function showResults(result) {
+            hideAllResults();
+            
+            // Update severity badge
+            const badge = document.getElementById('severityBadge');
+            badge.textContent = result.prediction;
+            badge.className = `severity-badge ${getSeverityClass(result.prediction)}`;
+            
+            // Update confidence
+            document.getElementById('confidenceScore').textContent = result.confidence;
+            
+            // Update probability distribution
+            updateProbabilityList(result.all_probabilities);
+            
+            document.getElementById('analysisResults').classList.remove('hidden');
+        }
+        
+        function showError(message) {
+            hideAllResults();
+            document.getElementById('errorMessage').textContent = message;
+            document.getElementById('errorResults').classList.remove('hidden');
+        }
+        
+        function hideAllResults() {
+            document.getElementById('defaultResults').classList.add('hidden');
+            document.getElementById('loadingResults').classList.add('hidden');
+            document.getElementById('analysisResults').classList.add('hidden');
+            document.getElementById('errorResults').classList.add('hidden');
+        }
+        
+        function getSeverityClass(severity) {
+            const classes = {
+                'No DR': 'severity-no-dr',
+                'Mild': 'severity-mild',
+                'Moderate': 'severity-moderate',
+                'Severe': 'severity-severe',
+                'Proliferative': 'severity-proliferative'
+            };
+            return classes[severity] || 'severity-no-dr';
+        }
+        
+        function updateProbabilityList(probabilities) {
+            const labels = ['No DR', 'Mild', 'Moderate', 'Severe', 'Proliferative'];
+            const colors = ['#10b981', '#84cc16', '#f59e0b', '#ef4444', '#991b1b'];
+            const container = document.getElementById('probabilityList');
+            container.innerHTML = '';
+            
+            labels.forEach((label, index) => {
+                const probability = probabilities[index];
+                const color = colors[index];
+                
+                const item = document.createElement('div');
+                item.className = 'flex items-center space-x-6';
+                item.innerHTML = `
+                    <div class="w-28 text-sm font-semibold text-white">${label}</div>
+                    <div class="flex-1">
+                        <div class="bg-gray-800 bg-opacity-50 rounded-full h-2 relative overflow-hidden border border-gray-700">
+                            <div class="probability-bar rounded-full" 
+                                 style="width: ${probability}%; --bar-color: ${color}; --bar-color-light: ${color}88;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-20 text-sm font-bold text-primary text-right">${probability}%</div>
+                `;
+                
+                container.appendChild(item);
+                
+                // Animate the bar
+                setTimeout(() => {
+                    item.querySelector('.probability-bar').style.width = `${probability}%`;
+                }, 100 * index);
+            });
+        }
+        
+        async function showModelInfo() {
+            openModal('modelInfoModal');
+            
+            try {
+                const response = await fetch('/prediction/model-info/');
+                const info = await response.json();
+                
+                const content = `
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-gray-900 bg-opacity-50 rounded-xl p-4 border border-gray-700">
+                                <h4 class="font-semibold text-white mb-2 text-sm">Neural Architecture</h4>
+                                <p class="text-secondary text-sm">${info.model_type}</p>
+                            </div>
+                            <div class="bg-gray-900 bg-opacity-50 rounded-xl p-4 border border-gray-700">
+                                <h4 class="font-semibold text-white mb-2 text-sm">Input Dimensions</h4>
+                                <p class="text-secondary text-sm">${info.input_shape.join(' × ')} pixels</p>
+                            </div>
+                            <div class="bg-gray-900 bg-opacity-50 rounded-xl p-4 border border-gray-700">
+                                <h4 class="font-semibold text-white mb-2 text-sm">Network Status</h4>
+                                <p class="text-secondary text-sm">
+                                    ${info.model_loaded ? 
+                                        '<span class="text-green-400">● Neural Network Active</span>' : 
+                                        '<span class="text-yellow-400">● Demo Mode</span>'}
+                                </p>
+                            </div>
+                            <div class="bg-gray-900 bg-opacity-50 rounded-xl p-4 border border-gray-700">
+                                <h4 class="font-semibold text-white mb-2 text-sm">Classification Classes</h4>
+                                <p class="text-secondary text-sm">${info.classes.length} severity levels</p>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-semibold text-white mb-4 text-sm">Neural Classification Matrix</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                ${info.classes.map(cls => {
+                                    const iconMap = {
+                                        'No DR': 'fa-check',
+                                        'Mild': 'fa-exclamation',
+                                        'Moderate': 'fa-exclamation-triangle',
+                                        'Severe': 'fa-times-circle',
+                                        'Proliferative': 'fa-skull-crossbones'
+                                    };
+                                    const colorMap = {
+                                        'No DR': 'bg-green-500',
+                                        'Mild': 'bg-lime-500',
+                                        'Moderate': 'bg-amber-500',
+                                        'Severe': 'bg-red-500',
+                                        'Proliferative': 'bg-red-900'
+                                    };
+                                    return `
+                                        <div class="text-center">
+                                            <div class="w-12 h-12 ${colorMap[cls.name]} rounded-full flex items-center justify-center mx-auto mb-3">
+                                                <i class="fas ${iconMap[cls.name]} text-white text-lg"></i>
+                                            </div>
+                                            <h5 class="font-bold text-white text-sm mb-1">${cls.name}</h5>
+                                            <p class="text-secondary text-xs">${cls.description}</p>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.getElementById('modelInfoContent').innerHTML = content;
+            } catch (error) {
+                document.getElementById('modelInfoContent').innerHTML = `
+                    <div class="text-center py-8">
+                        <i class="fas fa-exclamation-triangle text-3xl text-red-400"></i>
+                        <p class="text-secondary mt-3 text-sm">Failed to load neural network information</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                console.log('Modal closed:', modalId);
+            }
+        }
+        
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                console.log('Modal opened:', modalId);
+            }
+        }
+        
+        // Add click outside to close functionality
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('modelInfoModal');
+            if (event.target === modal) {
+                closeModal('modelInfoModal');
+            }
+        });
+        
+        // Add escape key to close functionality
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal('modelInfoModal');
+            }
+        });
+        
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        
+        // Simple initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM Loaded');
+            
+            // Simple upload area click
+            const uploadArea = document.getElementById('uploadArea');
+            if (uploadArea) {
+                uploadArea.onclick = function() {
+                    document.getElementById('imageInput').click();
+                };
+            }
+            
+            // Simple drag and drop
+            if (uploadArea) {
+                uploadArea.addEventListener('dragover', (e) => e.preventDefault());
+                uploadArea.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    const files = e.dataTransfer.files;
+                    if (files.length > 0 && files[0].type.startsWith('image/')) {
+                        selectedFile = files[0];
+                        showImagePreview(files[0]);
+                        document.getElementById('analyzeBtn').disabled = false;
+                    }
+                });
+            }
+        });
+        
+        // Modal close button
+        const closeBtn = document.getElementById('closeModalBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                closeModal('modelInfoModal');
+            });
+        }
+        
+        // Click outside to close modal
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('modelInfoModal');
+            if (event.target === modal) {
+                closeModal('modelInfoModal');
+            }
+        });
+        
+        // Escape key to close modal
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal('modelInfoModal');
+            }
+        });
+        
+        // Add fade-in animation on page load
+        setTimeout(() => {
+            document.querySelectorAll('.fade-in').forEach((el, index) => {
+                setTimeout(() => {
+                    el.style.opacity = '1';
+                }, index * 100);
+            });
+        }, 100);
+    </script>
+</body>
+</html>
