@@ -1,4 +1,13 @@
-import tensorflow.keras
+# Lazy loading to prevent memory issues on startup
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        import tensorflow.keras
+        _model = tensorflow.keras.models.load_model('keras_model.h5')
+    return _model
+
 from PIL import Image, ImageOps
 import numpy as np
 import os
@@ -10,15 +19,17 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 # Custom VarianceScaling initializer to handle compatibility issues
-class CompatibleVarianceScaling(tensorflow.keras.initializers.VarianceScaling):
-    def __init__(self, scale=1.0, mode='fan_in', distribution='normal', seed=None, **kwargs):
-        # Remove dtype parameter if it exists to avoid compatibility issues
-        super().__init__(scale=scale, mode=mode, distribution=distribution, seed=seed)
+class CompatibleVarianceScaling:
+    def __init__(self, scale=1.0, mode='fan_in', distribution='normal', seed=None):
+        self.scale = scale
+        self.mode = mode
+        self.distribution = distribution
+        self.seed = seed
 
 # Custom Zeros initializer
-class CompatibleZeros(tensorflow.keras.initializers.Zeros):
-    def __init__(self, **kwargs):
-        super().__init__()
+class CompatibleZeros:
+    def __init__(self):
+        pass
 
 class DiabeticRetinopathyService:
     def __init__(self):
@@ -27,17 +38,17 @@ class DiabeticRetinopathyService:
         self.output_dir = Path(__file__).parent / 'output'
         self.output_dir.mkdir(exist_ok=True)
         self.class_labels = ['No DR', 'Mild', 'Moderate', 'Severe', 'Proliferative']
-        self._load_model()
+        # Don't load model on startup - lazy load instead
     
     def _load_model(self):
-        """Load the Keras model with error handling"""
+        """Load the Keras model with error handling - lazy loading"""
         try:
+            import tensorflow.keras
             self.model = tensorflow.keras.models.load_model(self.model_path, compile=False)
             logger.info("Model loaded successfully")
         except Exception as e:
             logger.error(f"Error loading model: {e}")
-            try:
-                self.model = tensorflow.keras.models.load_model(
+            self.model = None
                     self.model_path,
                     custom_objects={
                         'VarianceScaling': CompatibleVarianceScaling,
@@ -52,6 +63,10 @@ class DiabeticRetinopathyService:
     
     def process_image(self, image_file):
         """Process uploaded image and return prediction results"""
+        # Lazy load model only when needed
+        if self.model is None:
+            self._load_model()
+        
         if self.model is None:
             return self._demo_prediction(image_file.name)
         
