@@ -38,7 +38,8 @@ class DiabeticRetinopathyService:
         self.output_dir = Path(__file__).parent / 'output'
         self.output_dir.mkdir(exist_ok=True)
         self.class_labels = ['No DR', 'Mild', 'Moderate', 'Severe', 'Proliferative']
-        # Don't load model on startup - lazy load instead
+        # Force demo mode on Render for stability
+        self.demo_mode = True
     
     def _load_model(self):
         """Load the Keras model with error handling - lazy loading"""
