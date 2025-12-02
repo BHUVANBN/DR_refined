@@ -49,17 +49,6 @@ class DiabeticRetinopathyService:
         except Exception as e:
             logger.error(f"Error loading model: {e}")
             self.model = None
-                    self.model_path,
-                    custom_objects={
-                        'VarianceScaling': CompatibleVarianceScaling,
-                        'Zeros': CompatibleZeros
-                    },
-                    compile=False
-                )
-                logger.info("Model loaded with custom objects")
-            except Exception as e2:
-                logger.error(f"Error loading model with custom objects: {e2}")
-                self.model = None
     
     def process_image(self, image_file):
         """Process uploaded image and return prediction results"""
