@@ -48,10 +48,16 @@ class DiabeticRetinopathyService:
             logger.info("Model loaded successfully")
         except Exception as e:
             logger.error(f"Error loading model: {e}")
+            # Force demo mode on Render due to memory constraints
             self.model = None
+            self.demo_mode = True
     
     def process_image(self, image_file):
         """Process uploaded image and return prediction results"""
+        # Check if we're in demo mode (Render memory constraints)
+        if hasattr(self, 'demo_mode') and self.demo_mode:
+            return self._demo_prediction(image_file.name)
+        
         # Lazy load model only when needed
         if self.model is None:
             self._load_model()
